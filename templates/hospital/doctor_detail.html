@@ -1,0 +1,107 @@
+{% extends 'hospital/base.html' %}
+{% load static %}
+
+{% block title %}Dr. {{ doctor.user.get_full_name }} - Hospital Management{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body text-center">
+                    {% if doctor.profile_picture %}
+                        <img src="{{ doctor.profile_picture.url }}" alt="Dr. {{ doctor.user.get_full_name }}" 
+                             class="rounded-circle mb-3" style="width: 150px; height: 150px; object-fit: cover;">
+                    {% else %}
+                        <div class="bg-primary rounded-circle d-inline-flex align-items-center justify-content-center mb-3" 
+                             style="width: 150px; height: 150px;">
+                            <i class="fas fa-user-md fa-4x text-white"></i>
+                        </div>
+                    {% endif %}
+                    <h4>Dr. {{ doctor.user.get_full_name }}</h4>
+                    <p class="text-muted">{{ doctor.get_specialization_display }}</p>
+                    
+                    {% if doctor.is_available %}
+                        <span class="badge bg-success mb-3">Available</span>
+                    {% else %}
+                        <span class="badge bg-danger mb-3">Not Available</span>
+                    {% endif %}
+                    
+                    {% if user.is_authenticated and user.userprofile.role == 'patient' %}
+                        <div class="d-grid">
+                            <a href="{% url 'book_appointment' %}?doctor={{ doctor.id }}" class="btn btn-primary">
+                                <i class="fas fa-calendar-plus"></i> Book Appointment
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="fas fa-info-circle"></i> Doctor Information</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6>Specialization</h6>
+                            <p class="text-muted">{{ doctor.get_specialization_display }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>Experience</h6>
+                            <p class="text-muted">{{ doctor.experience_years }} years</p>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>License Number</h6>
+                            <p class="text-muted">{{ doctor.license_number|default:"Not specified" }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>Consultation Fee</h6>
+                            <p class="text-muted">${{ doctor.consultation_fee }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>Available Hours</h6>
+                            <p class="text-muted">{{ doctor.available_from }} - {{ doctor.available_to }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>Phone</h6>
+                            <p class="text-muted">{{ doctor.user.userprofile.phone|default:"Not provided" }}</p>
+                        </div>
+                    </div>
+                    
+                    {% if doctor.bio %}
+                        <hr>
+                        <h6>About</h6>
+                        <p>{{ doctor.bio }}</p>
+                    {% endif %}
+                    
+                    {% if doctor.qualifications %}
+                        <hr>
+                        <h6>Qualifications</h6>
+                        <p>{{ doctor.qualifications }}</p>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h5><i class="fas fa-calendar-alt"></i> Available Time Slots</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <p class="text-muted">Available from {{ doctor.available_from }} to {{ doctor.available_to }}</p>
+                            <p class="small text-info">
+                                <i class="fas fa-info-circle"></i> 
+                                To book an appointment, please use the "Book Appointment" button above.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

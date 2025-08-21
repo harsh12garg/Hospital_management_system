@@ -1,0 +1,323 @@
+{% extends 'hospital/base.html' %}
+{% load static %}
+
+{% block title %}About Us - Hospital Management{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<div class="bg-primary text-white py-5">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-md-6">
+                <h1 class="display-4 fw-bold">About Our Hospital</h1>
+                <p class="lead">Providing exceptional healthcare services with compassion, innovation, and excellence for over 25 years.</p>
+            </div>
+            <div class="col-md-6 text-center">
+                <i class="fas fa-hospital fa-8x opacity-75"></i>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Mission & Vision Section -->
+<div class="container my-5">
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card h-100 border-0 shadow-sm">
+                <div class="card-body text-center p-4">
+                    <div class="mb-3">
+                        <i class="fas fa-bullseye fa-3x text-primary"></i>
+                    </div>
+                    <h3>Our Mission</h3>
+                    <p class="text-muted">To provide comprehensive, compassionate, and high-quality healthcare services to our community while advancing medical knowledge through research and education.</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card h-100 border-0 shadow-sm">
+                <div class="card-body text-center p-4">
+                    <div class="mb-3">
+                        <i class="fas fa-eye fa-3x text-primary"></i>
+                    </div>
+                    <h3>Our Vision</h3>
+                    <p class="text-muted">To be the leading healthcare provider in the region, recognized for excellence in patient care, medical innovation, and community health improvement.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Statistics Section -->
+<div class="bg-light py-5">
+    <div class="container">
+        <div class="row text-center">
+            <div class="col-md-3 mb-4">
+                <div class="card border-0 bg-transparent">
+                    <div class="card-body">
+                        <i class="fas fa-user-md fa-3x text-primary mb-3"></i>
+                        <h2 class="fw-bold text-primary">150+</h2>
+                        <p class="text-muted">Expert Doctors</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-4">
+                <div class="card border-0 bg-transparent">
+                    <div class="card-body">
+                        <i class="fas fa-bed fa-3x text-success mb-3"></i>
+                        <h2 class="fw-bold text-success">500+</h2>
+                        <p class="text-muted">Hospital Beds</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-4">
+                <div class="card border-0 bg-transparent">
+                    <div class="card-body">
+                        <i class="fas fa-users fa-3x text-info mb-3"></i>
+                        <h2 class="fw-bold text-info">50,000+</h2>
+                        <p class="text-muted">Patients Served</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-4">
+                <div class="card border-0 bg-transparent">
+                    <div class="card-body">
+                        <i class="fas fa-award fa-3x text-warning mb-3"></i>
+                        <h2 class="fw-bold text-warning">25+</h2>
+                        <p class="text-muted">Years of Service</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Services Section -->
+<div class="container my-5">
+    <div class="text-center mb-5">
+        <h2 class="fw-bold">Our Services</h2>
+        <p class="text-muted">Comprehensive healthcare services across multiple specialties</p>
+    </div>
+    <div class="row">
+        <div class="col-md-4 mb-4">
+            <div class="card h-100 shadow-sm">
+                <div class="card-body text-center">
+                    <i class="fas fa-heartbeat fa-3x text-danger mb-3"></i>
+                    <h5>Cardiology</h5>
+                    <p class="text-muted">Advanced cardiac care with state-of-the-art equipment and experienced cardiologists.</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-4">
+            <div class="card h-100 shadow-sm">
+                <div class="card-body text-center">
+                    <i class="fas fa-brain fa-3x text-info mb-3"></i>
+                    <h5>Neurology</h5>
+                    <p class="text-muted">Comprehensive neurological services including diagnosis and treatment of brain disorders.</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-4">
+            <div class="card h-100 shadow-sm">
+                <div class="card-body text-center">
+                    <i class="fas fa-bone fa-3x text-warning mb-3"></i>
+                    <h5>Orthopedics</h5>
+                    <p class="text-muted">Expert orthopedic care for bone, joint, and muscle conditions with modern surgical techniques.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- 
+Values Section -->
+<div class="bg-primary text-white py-5">
+    <div class="container">
+        <div class="text-center mb-5">
+            <h2 class="fw-bold">Our Core Values</h2>
+            <p class="lead">The principles that guide everything we do</p>
+        </div>
+        <div class="row">
+            <div class="col-md-4 mb-4">
+                <div class="text-center">
+                    <i class="fas fa-heart fa-3x mb-3"></i>
+                    <h5>Compassion</h5>
+                    <p>We treat every patient with empathy, kindness, and respect, understanding that healing involves both medical expertise and human connection.</p>
+                </div>
+            </div>
+            <div class="col-md-4 mb-4">
+                <div class="text-center">
+                    <i class="fas fa-star fa-3x mb-3"></i>
+                    <h5>Excellence</h5>
+                    <p>We strive for the highest standards in medical care, continuously improving our services and staying at the forefront of medical innovation.</p>
+                </div>
+            </div>
+            <div class="col-md-4 mb-4">
+                <div class="text-center">
+                    <i class="fas fa-shield-alt fa-3x mb-3"></i>
+                    <h5>Integrity</h5>
+                    <p>We maintain the highest ethical standards, ensuring transparency, honesty, and accountability in all our interactions and decisions.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Team Section -->
+<div class="container my-5">
+    <div class="text-center mb-5">
+        <h2 class="fw-bold">Our Leadership Team</h2>
+        <p class="text-muted">Meet the experienced professionals leading our hospital</p>
+    </div>
+    <div class="row">
+        <div class="col-md-4 mb-4">
+            <div class="card text-center shadow-sm">
+                <div class="card-body">
+                    <div class="bg-primary rounded-circle d-inline-flex align-items-center justify-content-center mb-3" 
+                         style="width: 100px; height: 100px;">
+                        <i class="fas fa-user-tie fa-3x text-white"></i>
+                    </div>
+                    <h5>Dr. Sarah Johnson</h5>
+                    <p class="text-primary">Chief Medical Officer</p>
+                    <p class="text-muted small">25+ years of experience in internal medicine and hospital administration.</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-4">
+            <div class="card text-center shadow-sm">
+                <div class="card-body">
+                    <div class="bg-success rounded-circle d-inline-flex align-items-center justify-content-center mb-3" 
+                         style="width: 100px; height: 100px;">
+                        <i class="fas fa-user-md fa-3x text-white"></i>
+                    </div>
+                    <h5>Dr. Michael Chen</h5>
+                    <p class="text-success">Head of Surgery</p>
+                    <p class="text-muted small">Renowned surgeon with expertise in minimally invasive surgical techniques.</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-4">
+            <div class="card text-center shadow-sm">
+                <div class="card-body">
+                    <div class="bg-info rounded-circle d-inline-flex align-items-center justify-content-center mb-3" 
+                         style="width: 100px; height: 100px;">
+                        <i class="fas fa-user-nurse fa-3x text-white"></i>
+                    </div>
+                    <h5>Lisa Rodriguez</h5>
+                    <p class="text-info">Director of Nursing</p>
+                    <p class="text-muted small">Leading our nursing team with 20+ years of clinical and administrative experience.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Facilities Section -->
+<div class="bg-light py-5">
+    <div class="container">
+        <div class="text-center mb-5">
+            <h2 class="fw-bold">State-of-the-Art Facilities</h2>
+            <p class="text-muted">Modern equipment and comfortable environments for optimal patient care</p>
+        </div>
+        <div class="row">
+            <div class="col-md-6 mb-4">
+                <div class="d-flex">
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-microscope fa-2x text-primary"></i>
+                    </div>
+                    <div class="flex-grow-1 ms-3">
+                        <h5>Advanced Diagnostic Center</h5>
+                        <p class="text-muted">Equipped with the latest MRI, CT scan, and laboratory equipment for accurate diagnosis.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 mb-4">
+                <div class="d-flex">
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-procedures fa-2x text-success"></i>
+                    </div>
+                    <div class="flex-grow-1 ms-3">
+                        <h5>Modern Operating Theaters</h5>
+                        <p class="text-muted">12 fully equipped operating rooms with advanced surgical technology and monitoring systems.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 mb-4">
+                <div class="d-flex">
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-ambulance fa-2x text-danger"></i>
+                    </div>
+                    <div class="flex-grow-1 ms-3">
+                        <h5>24/7 Emergency Department</h5>
+                        <p class="text-muted">Round-the-clock emergency services with trauma specialists and critical care units.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 mb-4">
+                <div class="d-flex">
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-baby fa-2x text-info"></i>
+                    </div>
+                    <div class="flex-grow-1 ms-3">
+                        <h5>Maternity & Pediatric Wing</h5>
+                        <p class="text-muted">Specialized care for mothers and children with dedicated NICU and pediatric facilities.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Awards & Recognition -->
+<div class="container my-5">
+    <div class="text-center mb-5">
+        <h2 class="fw-bold">Awards & Recognition</h2>
+        <p class="text-muted">Recognized for excellence in healthcare delivery</p>
+    </div>
+    <div class="row">
+        <div class="col-md-3 mb-4 text-center">
+            <i class="fas fa-trophy fa-3x text-warning mb-3"></i>
+            <h6>Best Hospital Award</h6>
+            <p class="text-muted small">Healthcare Excellence Awards 2023</p>
+        </div>
+        <div class="col-md-3 mb-4 text-center">
+            <i class="fas fa-medal fa-3x text-primary mb-3"></i>
+            <h6>Patient Safety Excellence</h6>
+            <p class="text-muted small">National Patient Safety Foundation 2023</p>
+        </div>
+        <div class="col-md-3 mb-4 text-center">
+            <i class="fas fa-certificate fa-3x text-success mb-3"></i>
+            <h6>Quality Care Certification</h6>
+            <p class="text-muted small">Joint Commission Accreditation</p>
+        </div>
+        <div class="col-md-3 mb-4 text-center">
+            <i class="fas fa-star fa-3x text-info mb-3"></i>
+            <h6>Top Employer</h6>
+            <p class="text-muted small">Healthcare Industry Awards 2023</p>
+        </div>
+    </div>
+</div>
+
+<!-- Call to Action -->
+<div class="bg-primary text-white py-5">
+    <div class="container text-center">
+        <h2 class="fw-bold mb-3">Ready to Experience Quality Healthcare?</h2>
+        <p class="lead mb-4">Join thousands of satisfied patients who trust us with their health</p>
+        <div class="d-flex justify-content-center gap-3 flex-wrap">
+            {% if user.is_authenticated %}
+                <a href="{% url 'book_appointment' %}" class="btn btn-light btn-lg">
+                    <i class="fas fa-calendar-plus"></i> Book Appointment
+                </a>
+                <a href="{% url 'doctors' %}" class="btn btn-outline-light btn-lg">
+                    <i class="fas fa-user-md"></i> Find a Doctor
+                </a>
+            {% else %}
+                <a href="{% url 'signup' %}" class="btn btn-light btn-lg">
+                    <i class="fas fa-user-plus"></i> Register Now
+                </a>
+                <a href="{% url 'contact' %}" class="btn btn-outline-light btn-lg">
+                    <i class="fas fa-phone"></i> Contact Us
+                </a>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

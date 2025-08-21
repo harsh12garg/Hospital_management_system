@@ -1,0 +1,230 @@
+{% extends 'hospital/base.html' %}
+{% load static %}
+
+{% block title %}Appointments - Hospital Management{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h4><i class="fas fa-calendar-alt"></i> Appointments</h4>
+                    {% if user.userprofile.role == 'patient' %}
+                        <a href="{% url 'book_appointment' %}" class="btn btn-primary">
+                            <i class="fas fa-plus"></i> Book New Appointment
+                        </a>
+                    {% endif %}
+                </div>
+                <div class="card-body">
+                    <!-- Search Form -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <form method="get" class="row g-3">
+                                <div class="col-md-3">
+                                    {{ search_form.patient_name }}
+                                </div>
+                                <div class="col-md-3">
+                                    {{ search_form.doctor_name }}
+                                </div>
+                                <div class="col-md-2">
+                                    {{ search_form.date_from }}
+                                </div>
+                                <div class="col-md-2">
+                                    {{ search_form.date_to }}
+                                </div>
+                                <div class="col-md-2">
+                                    {{ search_form.status }}
+                                </div>
+                                <div class="col-12">
+                                    <button type="submit" class="btn btn-outline-primary me-2">
+                                        <i class="fas fa-search"></i> Search
+                                    </button>
+                                    <a href="{% url 'appointments' %}" class="btn btn-outline-secondary">
+                                        <i class="fas fa-times"></i> Clear
+                                    </a>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
+                    {% if appointments %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Date & Time</th>
+                                        {% if user.userprofile.role != 'patient' %}
+                                            <th>Patient</th>
+                                        {% endif %}
+                                        {% if user.userprofile.role != 'doctor' %}
+                                            <th>Doctor</th>
+                                        {% endif %}
+                                        <th>Status</th>
+                                        <th>Reason</th>
+                                        <th>Notes</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for appointment in appointments %}
+                                    <tr>
+                                        <td>
+                                            <div>
+                                                <strong>{{ appointment.appointment_date }}</strong><br>
+                                                <small class="text-muted">{{ appointment.appointment_time }}</small>
+                                            </div>
+                                        </td>
+                                        {% if user.userprofile.role != 'patient' %}
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <div class="avatar-sm bg-light rounded-circle d-flex align-items-center justify-content-center me-2">
+                                                    <i class="fas fa-user text-muted"></i>
+                                                </div>
+                                                <div>
+                                                    <strong>{{ appointment.patient.user.get_full_name }}</strong><br>
+                                                    <small class="text-muted">{{ appointment.patient.patient_id }}</small>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        {% endif %}
+                                        {% if user.userprofile.role != 'doctor' %}
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <div class="avatar-sm bg-primary rounded-circle d-flex align-items-center justify-content-center me-2">
+                                                    <i class="fas fa-user-md text-white"></i>
+                                                </div>
+                                                <div>
+                                                    <strong>Dr. {{ appointment.doctor.user.get_full_name }}</strong><br>
+                                                    <small class="text-muted">{{ appointment.doctor.get_specialization_display }}</small>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        {% endif %}
+                                        <td>
+                                            {% if appointment.status == 'scheduled' %}
+                                                <span class="badge bg-primary">Scheduled</span>
+                                            {% elif appointment.status == 'completed' %}
+                                                <span class="badge bg-success">Completed</span>
+                                            {% elif appointment.status == 'cancelled' %}
+                                                <span class="badge bg-danger">Cancelled</span>
+                                            {% elif appointment.status == 'no_show' %}
+                                                <span class="badge bg-warning">No Show</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>{{ appointment.reason|truncatechars:30 }}</td>
+                                        <td>{{ appointment.notes|truncatechars:30|default:"-" }}</td>
+                                        <td>
+                                            <div class="btn-group btn-group-sm">
+                                                <button type="button" class="btn btn-outline-primary" 
+                                                        data-bs-toggle="modal" data-bs-target="#appointmentModal{{ appointment.id }}">
+                                                    <i class="fas fa-eye"></i>
+                                                </button>
+                                                {% if appointment.status == 'scheduled' and user.userprofile.role == 'patient' %}
+                                                    <button type="button" class="btn btn-outline-danger" 
+                                                            onclick="cancelAppointment({{ appointment.id }})">
+                                                        <i class="fas fa-times"></i>
+                                                    </button>
+                                                {% endif %}
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <!-- Pagination -->
+                        {% if is_paginated %}
+                        <nav aria-label="Appointments pagination">
+                            <ul class="pagination justify-content-center">
+                                {% if page_obj.has_previous %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="?page=1">First</a>
+                                    </li>
+                                    <li class="page-item">
+                                        <a class="page-link" href="?page={{ page_obj.previous_page_number }}">Previous</a>
+                                    </li>
+                                {% endif %}
+                                
+                                <li class="page-item active">
+                                    <span class="page-link">{{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+                                </li>
+                                
+                                {% if page_obj.has_next %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="?page={{ page_obj.next_page_number }}">Next</a>
+                                    </li>
+                                    <li class="page-item">
+                                        <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}">Last</a>
+                                    </li>
+                                {% endif %}
+                            </ul>
+                        </nav>
+                        {% endif %}
+                    {% else %}
+                        <div class="text-center py-5">
+                            <i class="fas fa-calendar-alt fa-3x text-muted mb-3"></i>
+                            <h5 class="text-muted">No appointments found</h5>
+                            {% if user.userprofile.role == 'patient' %}
+                                <p class="text-muted">You haven't booked any appointments yet.</p>
+                                <a href="{% url 'book_appointment' %}" class="btn btn-primary">
+                                    <i class="fas fa-plus"></i> Book Your First Appointment
+                                </a>
+                            {% else %}
+                                <p class="text-muted">No appointments match your search criteria.</p>
+                            {% endif %}
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Appointment Detail Modals -->
+{% for appointment in appointments %}
+<div class="modal fade" id="appointmentModal{{ appointment.id }}" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Appointment Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6>Appointment Information</h6>
+                        <p><strong>Date:</strong> {{ appointment.appointment_date }}</p>
+                        <p><strong>Time:</strong> {{ appointment.appointment_time }}</p>
+                        <p><strong>Status:</strong> 
+                            {% if appointment.status == 'scheduled' %}
+                                <span class="badge bg-primary">Scheduled</span>
+                            {% elif appointment.status == 'completed' %}
+                                <span class="badge bg-success">Completed</span>
+                            {% elif appointment.status == 'cancelled' %}
+                                <span class="badge bg-danger">Cancelled</span>
+                            {% elif appointment.status == 'no_show' %}
+                                <span class="badge bg-warning">No Show</span>
+                            {% endif %}
+                        </p>
+                        <p><strong>Reason:</strong> {{ appointment.reason }}</p>
+                        {% if appointment.notes %}
+                            <p><strong>Notes:</strong> {{ appointment.notes }}</p>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-6">
+                        <h6>Patient & Doctor</h6>
+                        <p><strong>Patient:</strong> {{ appointment.patient.user.get_full_name }}</p>
+                        <p><strong>Patient ID:</strong> {{ appointment.patient.patient_id }}</p>
+                        <p><strong>Doctor:</strong> Dr. {{ appointment.doctor.user.get_full_name }}</p>
+                        <p><strong>Specialization:</strong> {{ appointment.doctor.get_specialization_display }}</p>
+                        <p><strong>Consultation Fee:</strong> ${{ appointment.doctor.consultation_fee }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endfor %}
+{% endblock %}

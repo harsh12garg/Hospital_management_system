@@ -1,0 +1,736 @@
+{% extends 'hospital/base.html' %}
+{% load static %}
+
+{% block title %}Dashboard - Hospital Management System{% endblock %}
+
+{% block extra_css %}
+<style>
+    .dashboard-widget {
+        background: #ffffff;
+        border-radius: 12px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+        padding: 1.5rem;
+        border: 1px solid #e9ecef;
+        transition: all 0.3s ease;
+    }
+    
+    .dashboard-widget:hover {
+        box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+        transform: translateY(-2px);
+    }
+    
+    .stats-card {
+        background: linear-gradient(135deg, var(--bs-primary) 0%, #4c84ff 100%);
+        border-radius: 12px;
+        padding: 1.5rem;
+        color: white;
+        text-align: center;
+        transition: all 0.3s ease;
+        border: none;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+    
+    .stats-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+    }
+    
+    .stats-card.bg-success {
+        background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    }
+    
+    .stats-card.bg-info {
+        background: linear-gradient(135deg, #17a2b8 0%, #6f42c1 100%);
+    }
+    
+    .stats-card.bg-warning {
+        background: linear-gradient(135deg, #ffc107 0%, #fd7e14 100%);
+        color: #212529;
+    }
+    
+    .stats-card.bg-danger {
+        background: linear-gradient(135deg, #dc3545 0%, #e83e8c 100%);
+    }
+    
+    .stats-icon {
+        font-size: 2.5rem;
+        margin-bottom: 0.5rem;
+        opacity: 0.9;
+    }
+    
+    .stats-number {
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: 0.25rem;
+    }
+    
+    .stats-label {
+        font-size: 0.9rem;
+        opacity: 0.9;
+        font-weight: 500;
+    }
+    
+    .widget-header {
+        border-bottom: 2px solid #f8f9fa;
+        padding-bottom: 1rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .widget-title {
+        color: #2c3e50;
+        font-weight: 600;
+        margin: 0;
+        display: flex;
+        align-items: center;
+    }
+    
+    .widget-icon {
+        color: #007bff;
+        margin-right: 0.5rem;
+    }
+    
+    .table {
+        color: #2c3e50;
+    }
+    
+    .table thead th {
+        background-color: #f8f9fa;
+        border-bottom: 2px solid #dee2e6;
+        color: #495057;
+        font-weight: 600;
+        font-size: 0.875rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    .table tbody tr:hover {
+        background-color: #f8f9fa;
+    }
+    
+    .welcome-section {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border-radius: 12px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+    
+    .welcome-title {
+        font-size: 1.75rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+    }
+    
+    .welcome-subtitle {
+        opacity: 0.9;
+        font-size: 1.1rem;
+    }
+    
+    .datetime-info {
+        background: rgba(255,255,255,0.1);
+        border-radius: 8px;
+        padding: 0.75rem;
+        backdrop-filter: blur(10px);
+    }
+    
+    .quick-action-btn {
+        border-radius: 10px;
+        padding: 1rem;
+        text-align: center;
+        transition: all 0.3s ease;
+        border: none;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    
+    .quick-action-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+    }
+    
+    .badge {
+        font-size: 0.75rem;
+        padding: 0.375rem 0.75rem;
+        border-radius: 6px;
+    }
+    
+    .text-dark {
+        color: #2c3e50 !important;
+    }
+    
+    .text-muted {
+        color: #6c757d !important;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Welcome Section -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="welcome-section">
+                <div class="d-flex align-items-center justify-content-between flex-wrap">
+                    <div>
+                        <h2 class="welcome-title mb-1">Welcome back, {{ user.get_full_name|default:user.username }}!</h2>
+                        <p class="welcome-subtitle mb-0">
+                            <i class="fas fa-user-tag me-2"></i>
+                            {% if user_role == 'admin' %}
+                                System Administrator
+                            {% elif user_role == 'doctor' %}
+                                Medical Doctor
+                            {% elif user_role == 'patient' %}
+                                Patient
+                            {% else %}
+                                User
+                            {% endif %}
+                        </p>
+                    </div>
+                    <div class="datetime-info text-end">
+                        <div class="mb-1">
+                            <i class="fas fa-calendar me-2"></i>
+                            <span id="currentDate"></span>
+                        </div>
+                        <div>
+                            <i class="fas fa-clock me-2"></i>
+                            <span id="currentTime"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% if user_role == 'admin' %}
+        <!-- Admin Dashboard -->
+        <div class="row mb-4">
+            <div class="col-lg-3 col-md-6 mb-4">
+                <div class="stats-card bg-primary text-white">
+                    <div class="stats-icon">
+                        <i class="fas fa-user-md"></i>
+                    </div>
+                    <div class="stats-number">{{ total_doctors }}</div>
+                    <div class="stats-label">Total Doctors</div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6 mb-4">
+                <div class="stats-card bg-success text-white">
+                    <div class="stats-icon">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <div class="stats-number">{{ total_patients }}</div>
+                    <div class="stats-label">Total Patients</div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6 mb-4">
+                <div class="stats-card bg-info text-white">
+                    <div class="stats-icon">
+                        <i class="fas fa-calendar-check"></i>
+                    </div>
+                    <div class="stats-number">{{ total_appointments }}</div>
+                    <div class="stats-label">Total Appointments</div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6 mb-4">
+                <div class="stats-card bg-warning text-white">
+                    <div class="stats-icon">
+                        <i class="fas fa-file-invoice-dollar"></i>
+                    </div>
+                    <div class="stats-number">{{ pending_bills }}</div>
+                    <div class="stats-label">Pending Bills</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-lg-8 mb-4">
+                <div class="dashboard-widget">
+                    <div class="widget-header">
+                        <h5 class="widget-title">
+                            <i class="fas fa-chart-line widget-icon"></i>
+                            Appointments Overview
+                        </h5>
+                    </div>
+                    <div style="height: 300px;">
+                        <canvas id="appointmentsChart"></canvas>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4 mb-4">
+                <div class="dashboard-widget">
+                    <div class="widget-header">
+                        <h5 class="widget-title">
+                            <i class="fas fa-chart-pie widget-icon"></i>
+                            Revenue Breakdown
+                        </h5>
+                    </div>
+                    <div style="height: 300px;">
+                        <canvas id="revenueChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-lg-6 mb-4">
+                <div class="dashboard-widget">
+                    <div class="widget-header">
+                        <h5 class="widget-title">
+                            <i class="fas fa-clock widget-icon"></i>
+                            Recent Appointments
+                        </h5>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Patient</th>
+                                    <th>Doctor</th>
+                                    <th>Date</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for appointment in recent_appointments %}
+                                <tr>
+                                    <td>{{ appointment.patient.user.get_full_name }}</td>
+                                    <td>Dr. {{ appointment.doctor.user.get_full_name }}</td>
+                                    <td>{{ appointment.appointment_date }}</td>
+                                    <td>
+                                        <span class="badge bg-{% if appointment.status == 'scheduled' %}primary{% elif appointment.status == 'completed' %}success{% elif appointment.status == 'cancelled' %}danger{% else %}secondary{% endif %}">
+                                            {{ appointment.get_status_display }}
+                                        </span>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="4" class="text-center text-muted">No recent appointments</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6 mb-4">
+                <div class="dashboard-widget">
+                    <div class="widget-header">
+                        <h5 class="widget-title">
+                            <i class="fas fa-user-plus widget-icon"></i>
+                            Recent Registrations
+                        </h5>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Role</th>
+                                    <th>Date</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for profile in recent_registrations %}
+                                <tr>
+                                    <td>{{ profile.user.get_full_name }}</td>
+                                    <td>
+                                        <span class="badge bg-{% if profile.role == 'doctor' %}success{% elif profile.role == 'patient' %}info{% else %}warning{% endif %}">
+                                            {{ profile.get_role_display }}
+                                        </span>
+                                    </td>
+                                    <td>{{ profile.created_at|date:"M d, Y" }}</td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="3" class="text-center text-muted">No recent registrations</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    {% elif user_role == 'doctor' %}
+        <!-- Doctor Dashboard -->
+        <div class="row mb-4">
+            <div class="col-lg-4 col-md-6 mb-4">
+                <div class="stats-card bg-primary text-white">
+                    <div class="stats-icon">
+                        <i class="fas fa-calendar-day"></i>
+                    </div>
+                    <div class="stats-number">{{ todays_appointments.count }}</div>
+                    <div class="stats-label">Today's Appointments</div>
+                </div>
+            </div>
+            <div class="col-lg-4 col-md-6 mb-4">
+                <div class="stats-card bg-success text-white">
+                    <div class="stats-icon">
+                        <i class="fas fa-calendar-week"></i>
+                    </div>
+                    <div class="stats-number">{{ upcoming_appointments.count }}</div>
+                    <div class="stats-label">Upcoming Appointments</div>
+                </div>
+            </div>
+            <div class="col-lg-4 col-md-6 mb-4">
+                <div class="stats-card bg-info text-white">
+                    <div class="stats-icon">
+                        <i class="fas fa-dollar-sign"></i>
+                    </div>
+                    <div class="stats-number">${{ doctor.consultation_fee }}</div>
+                    <div class="stats-label">Consultation Fee</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-lg-8 mb-4">
+                <div class="dashboard-widget">
+                    <div class="widget-header">
+                        <h5 class="widget-title">
+                            <i class="fas fa-calendar-alt widget-icon"></i>
+                            Today's Schedule
+                        </h5>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Time</th>
+                                    <th>Patient</th>
+                                    <th>Reason</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for appointment in todays_appointments %}
+                                <tr>
+                                    <td>{{ appointment.appointment_time }}</td>
+                                    <td>{{ appointment.patient.user.get_full_name }}</td>
+                                    <td>{{ appointment.reason|truncatechars:30 }}</td>
+                                    <td>
+                                        <span class="badge bg-{% if appointment.status == 'scheduled' %}primary{% elif appointment.status == 'completed' %}success{% elif appointment.status == 'cancelled' %}danger{% else %}secondary{% endif %}">
+                                            {{ appointment.get_status_display }}
+                                        </span>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="4" class="text-center text-muted">No appointments scheduled for today</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4 mb-4">
+                <div class="dashboard-widget">
+                    <div class="widget-header">
+                        <h5 class="widget-title">
+                            <i class="fas fa-user-md widget-icon"></i>
+                            Doctor Profile
+                        </h5>
+                    </div>
+                    <div class="text-center">
+                        {% if doctor.user.userprofile.profile_picture %}
+                            <img src="{{ doctor.user.userprofile.profile_picture.url }}" alt="Profile" class="rounded-circle mb-3" style="width: 100px; height: 100px; object-fit: cover;">
+                        {% else %}
+                            <i class="fas fa-user-circle fa-5x text-muted mb-3"></i>
+                        {% endif %}
+                        <h6>Dr. {{ doctor.user.get_full_name }}</h6>
+                        <p class="text-muted">{{ doctor.get_specialization_display }}</p>
+                        <p class="text-muted">{{ doctor.experience_years }} years experience</p>
+                        <a href="{% url 'profile' %}" class="btn btn-primary btn-sm">
+                            <i class="fas fa-edit me-1"></i>Edit Profile
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    {% elif user_role == 'patient' %}
+        <!-- Patient Dashboard -->
+        <div class="row mb-4">
+            <div class="col-lg-4 col-md-6 mb-4">
+                <div class="stats-card bg-primary text-white">
+                    <div class="stats-icon">
+                        <i class="fas fa-calendar-check"></i>
+                    </div>
+                    <div class="stats-number">{{ upcoming_appointments.count }}</div>
+                    <div class="stats-label">Upcoming Appointments</div>
+                </div>
+            </div>
+            <div class="col-lg-4 col-md-6 mb-4">
+                <div class="stats-card bg-success text-white">
+                    <div class="stats-icon">
+                        <i class="fas fa-file-medical"></i>
+                    </div>
+                    <div class="stats-number">{{ patient.patient_id }}</div>
+                    <div class="stats-label">Patient ID</div>
+                </div>
+            </div>
+            <div class="col-lg-4 col-md-6 mb-4">
+                <div class="stats-card bg-warning text-white">
+                    <div class="stats-icon">
+                        <i class="fas fa-file-invoice-dollar"></i>
+                    </div>
+                    <div class="stats-number">{{ recent_bills.count }}</div>
+                    <div class="stats-label">Recent Bills</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-lg-8 mb-4">
+                <div class="dashboard-widget">
+                    <div class="widget-header d-flex justify-content-between align-items-center">
+                        <h5 class="widget-title">
+                            <i class="fas fa-calendar-alt widget-icon"></i>
+                            Upcoming Appointments
+                        </h5>
+                        <a href="{% url 'book_appointment' %}" class="btn btn-primary btn-sm">
+                            <i class="fas fa-plus me-1"></i>Book New
+                        </a>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Time</th>
+                                    <th>Doctor</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for appointment in upcoming_appointments %}
+                                <tr>
+                                    <td>{{ appointment.appointment_date }}</td>
+                                    <td>{{ appointment.appointment_time }}</td>
+                                    <td>Dr. {{ appointment.doctor.user.get_full_name }}</td>
+                                    <td>
+                                        <span class="badge bg-{% if appointment.status == 'scheduled' %}primary{% elif appointment.status == 'completed' %}success{% elif appointment.status == 'cancelled' %}danger{% else %}secondary{% endif %}">
+                                            {{ appointment.get_status_display }}
+                                        </span>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="4" class="text-center text-muted">
+                                        No upcoming appointments. 
+                                        <a href="{% url 'book_appointment' %}" class="text-decoration-none">Book one now</a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4 mb-4">
+                <div class="dashboard-widget">
+                    <div class="widget-header">
+                        <h5 class="widget-title">
+                            <i class="fas fa-user widget-icon"></i>
+                            Patient Profile
+                        </h5>
+                    </div>
+                    <div class="text-center">
+                        {% if patient.user.userprofile.profile_picture %}
+                            <img src="{{ patient.user.userprofile.profile_picture.url }}" alt="Profile" class="rounded-circle mb-3" style="width: 100px; height: 100px; object-fit: cover;">
+                        {% else %}
+                            <i class="fas fa-user-circle fa-5x text-muted mb-3"></i>
+                        {% endif %}
+                        <h6>{{ patient.user.get_full_name }}</h6>
+                        <p class="text-muted">{{ patient.patient_id }}</p>
+                        {% if patient.blood_group %}
+                            <p class="text-muted">Blood Group: {{ patient.blood_group }}</p>
+                        {% endif %}
+                        <a href="{% url 'profile' %}" class="btn btn-primary btn-sm">
+                            <i class="fas fa-edit me-1"></i>Edit Profile
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-12">
+                <div class="dashboard-widget">
+                    <div class="widget-header">
+                        <h5 class="widget-title">
+                            <i class="fas fa-file-invoice-dollar widget-icon"></i>
+                            Recent Bills
+                        </h5>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Bill #</th>
+                                    <th>Date</th>
+                                    <th>Doctor</th>
+                                    <th>Amount</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for bill in recent_bills %}
+                                <tr>
+                                    <td>{{ bill.bill_number }}</td>
+                                    <td>{{ bill.created_at|date:"M d, Y" }}</td>
+                                    <td>Dr. {{ bill.appointment.doctor.user.get_full_name }}</td>
+                                    <td>${{ bill.total_amount }}</td>
+                                    <td>
+                                        <span class="badge bg-{% if bill.payment_status == 'paid' %}success{% elif bill.payment_status == 'pending' %}warning{% elif bill.payment_status == 'partial' %}info{% else %}danger{% endif %}">
+                                            {{ bill.get_payment_status_display }}
+                                        </span>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="5" class="text-center text-muted">No billing records found</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+
+    <!-- Quick Actions -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="dashboard-widget">
+                <div class="widget-header">
+                    <h5 class="widget-title">
+                        <i class="fas fa-bolt widget-icon"></i>
+                        Quick Actions
+                    </h5>
+                </div>
+                <div class="row">
+                    {% if user_role == 'patient' %}
+                        <div class="col-md-3 mb-3">
+                            <a href="{% url 'book_appointment' %}" class="btn btn-primary w-100">
+                                <i class="fas fa-calendar-plus d-block mb-2"></i>
+                                Book Appointment
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <a href="{% url 'appointments' %}" class="btn btn-info w-100">
+                                <i class="fas fa-calendar-alt d-block mb-2"></i>
+                                View Appointments
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <a href="{% url 'billing' %}" class="btn btn-warning w-100">
+                                <i class="fas fa-file-invoice-dollar d-block mb-2"></i>
+                                View Bills
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <a href="{% url 'profile' %}" class="btn btn-secondary w-100">
+                                <i class="fas fa-user-edit d-block mb-2"></i>
+                                Update Profile
+                            </a>
+                        </div>
+                    {% elif user_role == 'doctor' %}
+                        <div class="col-md-3 mb-3">
+                            <a href="{% url 'appointments' %}" class="btn btn-primary w-100">
+                                <i class="fas fa-calendar-alt d-block mb-2"></i>
+                                View Schedule
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <a href="{% url 'patients' %}" class="btn btn-info w-100">
+                                <i class="fas fa-users d-block mb-2"></i>
+                                View Patients
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <a href="{% url 'billing' %}" class="btn btn-warning w-100">
+                                <i class="fas fa-file-invoice-dollar d-block mb-2"></i>
+                                View Billing
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <a href="{% url 'profile' %}" class="btn btn-secondary w-100">
+                                <i class="fas fa-user-edit d-block mb-2"></i>
+                                Update Profile
+                            </a>
+                        </div>
+                    {% else %}
+                        <div class="col-md-2 mb-3">
+                            <a href="{% url 'doctors' %}" class="btn btn-primary w-100">
+                                <i class="fas fa-user-md d-block mb-2"></i>
+                                Doctors
+                            </a>
+                        </div>
+                        <div class="col-md-2 mb-3">
+                            <a href="{% url 'patients' %}" class="btn btn-info w-100">
+                                <i class="fas fa-users d-block mb-2"></i>
+                                Patients
+                            </a>
+                        </div>
+                        <div class="col-md-2 mb-3">
+                            <a href="{% url 'appointments' %}" class="btn btn-success w-100">
+                                <i class="fas fa-calendar-alt d-block mb-2"></i>
+                                Appointments
+                            </a>
+                        </div>
+                        <div class="col-md-2 mb-3">
+                            <a href="{% url 'billing' %}" class="btn btn-warning w-100">
+                                <i class="fas fa-file-invoice-dollar d-block mb-2"></i>
+                                Billing
+                            </a>
+                        </div>
+                        <div class="col-md-2 mb-3">
+                            <a href="/admin/" class="btn btn-danger w-100">
+                                <i class="fas fa-cogs d-block mb-2"></i>
+                                Admin Panel
+                            </a>
+                        </div>
+                        <div class="col-md-2 mb-3">
+                            <a href="{% url 'profile' %}" class="btn btn-secondary w-100">
+                                <i class="fas fa-user-edit d-block mb-2"></i>
+                                Profile
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Update current date and time
+    function updateDateTime() {
+        const now = new Date();
+        const dateOptions = { 
+            weekday: 'long', 
+            year: 'numeric', 
+            month: 'long', 
+            day: 'numeric' 
+        };
+        const timeOptions = { 
+            hour: '2-digit', 
+            minute: '2-digit', 
+            second: '2-digit' 
+        };
+        
+        document.getElementById('currentDate').textContent = now.toLocaleDateString('en-US', dateOptions);
+        document.getElementById('currentTime').textContent = now.toLocaleTimeString('en-US', timeOptions);
+    }
+    
+    // Update every second
+    updateDateTime();
+    setInterval(updateDateTime, 1000);
+</script>
+{% endblock %}

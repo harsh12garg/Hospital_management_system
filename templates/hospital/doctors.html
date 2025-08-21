@@ -1,0 +1,271 @@
+{% extends 'hospital/base.html' %}
+{% load static %}
+
+{% block title %}Doctors - Hospital Management System{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <!-- Page Header -->
+    <div class="row mb-5">
+        <div class="col-12 text-center">
+            <h1 class="display-4 fw-bold mb-3">Our Medical Team</h1>
+            <p class="lead text-muted">Meet our experienced and qualified doctors</p>
+        </div>
+    </div>
+
+    <!-- Search and Filter Section -->
+    <div class="row mb-4">
+        <div class="col-lg-8 col-md-6 mb-3">
+            <div class="input-group">
+                <span class="input-group-text">
+                    <i class="fas fa-search"></i>
+                </span>
+                <input type="text" class="form-control" placeholder="Search doctors by name or specialization..." 
+                       value="{{ current_search }}" id="doctorSearch">
+            </div>
+        </div>
+        <div class="col-lg-4 col-md-6 mb-3">
+            <select class="form-select" id="specializationFilter">
+                <option value="">All Specializations</option>
+                {% for value, label in specializations %}
+                    <option value="{{ value }}" {% if current_specialization == value %}selected{% endif %}>
+                        {{ label }}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+    </div>
+
+    <!-- Doctors Grid -->
+    <div class="row" id="doctorsGrid">
+        {% for doctor in doctors %}
+            <div class="col-lg-4 col-md-6 mb-4 doctor-item" 
+                 data-name="{{ doctor.user.get_full_name|lower }}" 
+                 data-specialization="{{ doctor.specialization }}">
+                <div class="doctor-card">
+                    <div class="position-relative">
+                        {% if doctor.user.userprofile.profile_picture %}
+                            <img src="{{ doctor.user.userprofile.profile_picture.url }}" 
+                                 alt="Dr. {{ doctor.user.get_full_name }}" 
+                                 class="doctor-image">
+                        {% else %}
+                            <div class="doctor-image d-flex align-items-center justify-content-center bg-light">
+                                <i class="fas fa-user-md fa-5x text-muted"></i>
+                            </div>
+                        {% endif %}
+                        
+                        {% if doctor.is_available %}
+                            <span class="badge bg-success position-absolute top-0 end-0 m-3">
+                                <i class="fas fa-check-circle me-1"></i>Available
+                            </span>
+                        {% else %}
+                            <span class="badge bg-danger position-absolute top-0 end-0 m-3">
+                                <i class="fas fa-times-circle me-1"></i>Unavailable
+                            </span>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="doctor-info">
+                        <h5 class="doctor-name">Dr. {{ doctor.user.get_full_name }}</h5>
+                        <p class="doctor-specialty">
+                            <i class="fas fa-stethoscope me-2"></i>
+                            {{ doctor.get_specialization_display }}
+                        </p>
+                        
+                        <div class="doctor-details mb-3">
+                            <div class="row text-center">
+                                <div class="col-6">
+                                    <div class="border-end">
+                                        <h6 class="text-primary mb-0">{{ doctor.experience_years }}</h6>
+                                        <small class="text-muted">Years Experience</small>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <h6 class="text-success mb-0">${{ doctor.consultation_fee }}</h6>
+                                    <small class="text-muted">Consultation Fee</small>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="doctor-schedule mb-3">
+                            <p class="mb-1">
+                                <i class="fas fa-clock me-2 text-info"></i>
+                                <strong>Available:</strong> {{ doctor.available_from }} - {{ doctor.available_to }}
+                            </p>
+                        </div>
+                        
+                        <div class="doctor-actions d-grid gap-2">
+                            <a href="{% url 'doctor_detail' doctor.pk %}" class="btn btn-outline-primary">
+                                <i class="fas fa-eye me-2"></i>View Profile
+                            </a>
+                            {% if user.is_authenticated and user.userprofile.role == 'patient' and doctor.is_available %}
+                                <a href="{% url 'book_appointment' %}?doctor={{ doctor.pk }}" class="btn btn-primary">
+                                    <i class="fas fa-calendar-plus me-2"></i>Book Appointment
+                                </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% empty %}
+            <div class="col-12">
+                <div class="text-center py-5">
+                    <i class="fas fa-user-md fa-5x text-muted mb-3"></i>
+                    <h4 class="text-muted">No doctors found</h4>
+                    <p class="text-muted">Try adjusting your search criteria</p>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+
+    <!-- No Results Message -->
+    <div id="noResults" class="text-center py-5" style="display: none;">
+        <i class="fas fa-search fa-5x text-muted mb-3"></i>
+        <h4 class="text-muted">No doctors found</h4>
+        <p class="text-muted">Try adjusting your search criteria</p>
+    </div>
+
+    <!-- Pagination -->
+    {% if is_paginated %}
+        <div class="row mt-5">
+            <div class="col-12">
+                <nav aria-label="Doctors pagination">
+                    <ul class="pagination justify-content-center">
+                        {% if page_obj.has_previous %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page=1{% if current_search %}&search={{ current_search }}{% endif %}{% if current_specialization %}&specialization={{ current_specialization }}{% endif %}">
+                                    <i class="fas fa-angle-double-left"></i>
+                                </a>
+                            </li>
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if current_search %}&search={{ current_search }}{% endif %}{% if current_specialization %}&specialization={{ current_specialization }}{% endif %}">
+                                    <i class="fas fa-angle-left"></i>
+                                </a>
+                            </li>
+                        {% endif %}
+
+                        {% for num in page_obj.paginator.page_range %}
+                            {% if page_obj.number == num %}
+                                <li class="page-item active">
+                                    <span class="page-link">{{ num }}</span>
+                                </li>
+                            {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ num }}{% if current_search %}&search={{ current_search }}{% endif %}{% if current_specialization %}&specialization={{ current_specialization }}{% endif %}">{{ num }}</a>
+                                </li>
+                            {% endif %}
+                        {% endfor %}
+
+                        {% if page_obj.has_next %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if current_search %}&search={{ current_search }}{% endif %}{% if current_specialization %}&specialization={{ current_specialization }}{% endif %}">
+                                    <i class="fas fa-angle-right"></i>
+                                </a>
+                            </li>
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if current_search %}&search={{ current_search }}{% endif %}{% if current_specialization %}&specialization={{ current_specialization }}{% endif %}">
+                                    <i class="fas fa-angle-double-right"></i>
+                                </a>
+                            </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    {% endif %}
+
+    <!-- Call to Action -->
+    {% if not user.is_authenticated %}
+        <div class="row mt-5">
+            <div class="col-12">
+                <div class="card bg-primary text-white">
+                    <div class="card-body text-center py-5">
+                        <h3 class="fw-bold mb-3">Ready to Book an Appointment?</h3>
+                        <p class="mb-4">Join our healthcare system to book appointments with our expert doctors</p>
+                        <a href="{% url 'signup' %}" class="btn btn-light btn-lg me-3">
+                            <i class="fas fa-user-plus me-2"></i>Sign Up Now
+                        </a>
+                        <a href="{% url 'login' %}" class="btn btn-outline-light btn-lg">
+                            <i class="fas fa-sign-in-alt me-2"></i>Login
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('doctorSearch');
+    const specializationFilter = document.getElementById('specializationFilter');
+    const doctorsGrid = document.getElementById('doctorsGrid');
+    const noResults = document.getElementById('noResults');
+    
+    function filterDoctors() {
+        const searchTerm = searchInput.value.toLowerCase();
+        const selectedSpecialization = specializationFilter.value;
+        const doctorItems = document.querySelectorAll('.doctor-item');
+        let visibleCount = 0;
+        
+        doctorItems.forEach(item => {
+            const name = item.getAttribute('data-name');
+            const specialization = item.getAttribute('data-specialization');
+            
+            const matchesSearch = !searchTerm || name.includes(searchTerm);
+            const matchesSpecialization = !selectedSpecialization || specialization === selectedSpecialization;
+            
+            if (matchesSearch && matchesSpecialization) {
+                item.style.display = 'block';
+                item.classList.add('animate__animated', 'animate__fadeIn');
+                visibleCount++;
+            } else {
+                item.style.display = 'none';
+            }
+        });
+        
+        // Show/hide no results message
+        if (visibleCount === 0) {
+            doctorsGrid.style.display = 'none';
+            noResults.style.display = 'block';
+        } else {
+            doctorsGrid.style.display = 'flex';
+            noResults.style.display = 'none';
+        }
+        
+        // Update URL without page reload
+        const url = new URL(window.location);
+        if (searchTerm) {
+            url.searchParams.set('search', searchTerm);
+        } else {
+            url.searchParams.delete('search');
+        }
+        
+        if (selectedSpecialization) {
+            url.searchParams.set('specialization', selectedSpecialization);
+        } else {
+            url.searchParams.delete('specialization');
+        }
+        
+        window.history.replaceState({}, '', url);
+    }
+    
+    // Add event listeners
+    searchInput.addEventListener('input', filterDoctors);
+    specializationFilter.addEventListener('change', filterDoctors);
+    
+    // Add hover effects to doctor cards
+    document.querySelectorAll('.doctor-card').forEach(card => {
+        card.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-10px)';
+        });
+        
+        card.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(0)';
+        });
+    });
+});
+</script>
+{% endblock %}

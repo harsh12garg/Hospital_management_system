@@ -1,0 +1,345 @@
+{% extends 'hospital/base.html' %}
+{% load static %}
+
+{% block title %}Billing - Hospital Management{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h4><i class="fas fa-file-invoice-dollar"></i> Billing Records</h4>
+                    <div class="d-flex">
+                        <select class="form-select me-2" onchange="filterBills(this.value)">
+                            <option value="">All Status</option>
+                            <option value="pending">Pending</option>
+                            <option value="paid">Paid</option>
+                            <option value="overdue">Overdue</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="card-body">
+                    {% if bills %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Bill ID</th>
+                                        <th>Date</th>
+                                        {% if user.userprofile.role != 'patient' %}
+                                            <th>Patient</th>
+                                        {% endif %}
+                                        {% if user.userprofile.role != 'doctor' %}
+                                            <th>Doctor</th>
+                                        {% endif %}
+                                        <th>Services</th>
+                                        <th>Amount</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for bill in bills %}
+                                    <tr>
+                                        <td>
+                                            <span class="badge bg-secondary">{{ bill.id|stringformat:"05d" }}</span>
+                                        </td>
+                                        <td>
+                                            <div>
+                                                <strong>{{ bill.created_at|date:"M d, Y" }}</strong><br>
+                                                <small class="text-muted">{{ bill.created_at|time:"g:i A" }}</small>
+                                            </div>
+                                        </td>
+                                        {% if user.userprofile.role != 'patient' %}
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <div class="avatar-sm bg-light rounded-circle d-flex align-items-center justify-content-center me-2">
+                                                    <i class="fas fa-user text-muted"></i>
+                                                </div>
+                                                <div>
+                                                    <strong>{{ bill.appointment.patient.user.get_full_name }}</strong><br>
+                                                    <small class="text-muted">{{ bill.appointment.patient.patient_id }}</small>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        {% endif %}
+                                        {% if user.userprofile.role != 'doctor' %}
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <div class="avatar-sm bg-primary rounded-circle d-flex align-items-center justify-content-center me-2">
+                                                    <i class="fas fa-user-md text-white"></i>
+                                                </div>
+                                                <div>
+                                                    <strong>Dr. {{ bill.appointment.doctor.user.get_full_name }}</strong><br>
+                                                    <small class="text-muted">{{ bill.appointment.doctor.get_specialization_display }}</small>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        {% endif %}
+                                        <td>
+                                            <div>
+                                                <strong>Consultation</strong><br>
+                                                <small class="text-muted">{{ bill.appointment.appointment_date }}</small>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div>
+                                                <strong>${{ bill.total_amount }}</strong><br>
+                                                {% if bill.discount_amount > 0 %}
+                                                    <small class="text-success">Discount: -${{ bill.discount_amount }}</small>
+                                                {% endif %}
+                                            </div>
+                                        </td>
+                                        <td>
+                                            {% if bill.payment_status == 'pending' %}
+                                                <span class="badge bg-warning">Pending</span>
+                                            {% elif bill.payment_status == 'paid' %}
+                                                <span class="badge bg-success">Paid</span>
+                                            {% elif bill.payment_status == 'overdue' %}
+                                                <span class="badge bg-danger">Overdue</span>
+                                            {% elif bill.payment_status == 'cancelled' %}
+                                                <span class="badge bg-secondary">Cancelled</span>
+                                            {% endif %}
+                                            {% if bill.due_date and bill.payment_status == 'pending' %}
+                                                <br><small class="text-muted">Due: {{ bill.due_date }}</small>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <div class="btn-group btn-group-sm">
+                                                <button type="button" class="btn btn-outline-primary" 
+                                                        data-bs-toggle="modal" data-bs-target="#billModal{{ bill.id }}">
+                                                    <i class="fas fa-eye"></i>
+                                                </button>
+                                                {% if bill.payment_status == 'pending' and user.userprofile.role == 'patient' %}
+                                                    <button type="button" class="btn btn-outline-success" 
+                                                            onclick="payBill({{ bill.id }})">
+                                                        <i class="fas fa-credit-card"></i>
+                                                    </button>
+                                                {% endif %}
+                                                <button type="button" class="btn btn-outline-secondary" 
+                                                        onclick="downloadBill({{ bill.id }})">
+                                                    <i class="fas fa-download"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <!-- Summary Cards -->
+                        {% if user.userprofile.role == 'patient' %}
+                        <div class="row mt-4">
+                            <div class="col-md-3">
+                                <div class="card bg-warning text-white">
+                                    <div class="card-body text-center">
+                                        <h5>Pending Bills</h5>
+                                        <h3>${{ bills|length }}</h3>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="card bg-success text-white">
+                                    <div class="card-body text-center">
+                                        <h5>Paid Bills</h5>
+                                        <h3>$0</h3>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="card bg-info text-white">
+                                    <div class="card-body text-center">
+                                        <h5>Total Amount</h5>
+                                        <h3>${{ bills.0.total_amount|default:"0" }}</h3>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="card bg-primary text-white">
+                                    <div class="card-body text-center">
+                                        <h5>This Month</h5>
+                                        <h3>$0</h3>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+                        
+                        <!-- Pagination -->
+                        {% if is_paginated %}
+                        <nav aria-label="Billing pagination" class="mt-4">
+                            <ul class="pagination justify-content-center">
+                                {% if page_obj.has_previous %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="?page=1">First</a>
+                                    </li>
+                                    <li class="page-item">
+                                        <a class="page-link" href="?page={{ page_obj.previous_page_number }}">Previous</a>
+                                    </li>
+                                {% endif %}
+                                
+                                <li class="page-item active">
+                                    <span class="page-link">{{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+                                </li>
+                                
+                                {% if page_obj.has_next %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="?page={{ page_obj.next_page_number }}">Next</a>
+                                    </li>
+                                    <li class="page-item">
+                                        <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}">Last</a>
+                                    </li>
+                                {% endif %}
+                            </ul>
+                        </nav>
+                        {% endif %}
+                    {% else %}
+                        <div class="text-center py-5">
+                            <i class="fas fa-file-invoice-dollar fa-3x text-muted mb-3"></i>
+                            <h5 class="text-muted">No billing records found</h5>
+                            {% if user.userprofile.role == 'patient' %}
+                                <p class="text-muted">You don't have any bills yet.</p>
+                                <a href="{% url 'book_appointment' %}" class="btn btn-primary">
+                                    <i class="fas fa-calendar-plus"></i> Book an Appointment
+                                </a>
+                            {% else %}
+                                <p class="text-muted">No billing records available.</p>
+                            {% endif %}
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Bill Detail Modals -->
+{% for bill in bills %}
+<div class="modal fade" id="billModal{{ bill.id }}" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Bill Details - #{{ bill.id|stringformat:"05d" }}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6>Bill Information</h6>
+                        <p><strong>Bill ID:</strong> #{{ bill.id|stringformat:"05d" }}</p>
+                        <p><strong>Date:</strong> {{ bill.created_at|date:"M d, Y g:i A" }}</p>
+                        <p><strong>Status:</strong> 
+                            {% if bill.payment_status == 'pending' %}
+                                <span class="badge bg-warning">Pending</span>
+                            {% elif bill.payment_status == 'paid' %}
+                                <span class="badge bg-success">Paid</span>
+                            {% elif bill.payment_status == 'overdue' %}
+                                <span class="badge bg-danger">Overdue</span>
+                            {% endif %}
+                        </p>
+                        {% if bill.due_date %}
+                            <p><strong>Due Date:</strong> {{ bill.due_date }}</p>
+                        {% endif %}
+                        {% if bill.payment_date %}
+                            <p><strong>Payment Date:</strong> {{ bill.payment_date }}</p>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-6">
+                        <h6>Appointment Details</h6>
+                        <p><strong>Patient:</strong> {{ bill.appointment.patient.user.get_full_name }}</p>
+                        <p><strong>Doctor:</strong> Dr. {{ bill.appointment.doctor.user.get_full_name }}</p>
+                        <p><strong>Date:</strong> {{ bill.appointment.appointment_date }}</p>
+                        <p><strong>Time:</strong> {{ bill.appointment.appointment_time }}</p>
+                        <p><strong>Type:</strong> {{ bill.appointment.get_appointment_type_display|default:"Consultation" }}</p>
+                    </div>
+                </div>
+                
+                <hr>
+                
+                <div class="row">
+                    <div class="col-12">
+                        <h6>Billing Breakdown</h6>
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Service</th>
+                                    <th>Description</th>
+                                    <th class="text-end">Amount</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Consultation Fee</td>
+                                    <td>{{ bill.appointment.doctor.get_specialization_display }} Consultation</td>
+                                    <td class="text-end">${{ bill.appointment.doctor.consultation_fee }}</td>
+                                </tr>
+                                {% if bill.additional_charges > 0 %}
+                                <tr>
+                                    <td>Additional Charges</td>
+                                    <td>{{ bill.additional_charges_description|default:"Miscellaneous charges" }}</td>
+                                    <td class="text-end">${{ bill.additional_charges }}</td>
+                                </tr>
+                                {% endif %}
+                                {% if bill.discount_amount > 0 %}
+                                <tr class="table-success">
+                                    <td>Discount</td>
+                                    <td>{{ bill.discount_description|default:"Applied discount" }}</td>
+                                    <td class="text-end">-${{ bill.discount_amount }}</td>
+                                </tr>
+                                {% endif %}
+                            </tbody>
+                            <tfoot>
+                                <tr class="table-primary">
+                                    <th colspan="2">Total Amount</th>
+                                    <th class="text-end">${{ bill.total_amount }}</th>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+                
+                {% if bill.notes %}
+                <hr>
+                <div class="row">
+                    <div class="col-12">
+                        <h6>Notes</h6>
+                        <p>{{ bill.notes }}</p>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                {% if bill.payment_status == 'pending' and user.userprofile.role == 'patient' %}
+                    <button type="button" class="btn btn-success" onclick="payBill({{ bill.id }})">
+                        <i class="fas fa-credit-card"></i> Pay Now
+                    </button>
+                {% endif %}
+                <button type="button" class="btn btn-primary" onclick="downloadBill({{ bill.id }})">
+                    <i class="fas fa-download"></i> Download
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endfor %}
+
+<script>
+function filterBills(status) {
+    // Implement bill filtering logic
+    window.location.href = `?status=${status}`;
+}
+
+function payBill(billId) {
+    // Implement payment logic
+    alert('Payment functionality would be implemented here');
+}
+
+function downloadBill(billId) {
+    // Implement bill download logic
+    alert('Bill download functionality would be implemented here');
+}
+</script>
+{% endblock %}

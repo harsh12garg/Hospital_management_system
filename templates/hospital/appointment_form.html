@@ -1,0 +1,155 @@
+{% extends 'hospital/base.html' %}
+{% load static %}
+
+{% block title %}Book Appointment - Hospital Management{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h4><i class="fas fa-calendar-plus"></i> Book New Appointment</h4>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        {% if form.non_field_errors %}
+                            <div class="alert alert-danger">
+                                {{ form.non_field_errors }}
+                            </div>
+                        {% endif %}
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label for="{{ form.doctor.id_for_label }}" class="form-label">
+                                        <i class="fas fa-user-md"></i> Select Doctor *
+                                    </label>
+                                    {{ form.doctor }}
+                                    {% if form.doctor.errors %}
+                                        <div class="text-danger small">{{ form.doctor.errors }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label for="{{ form.appointment_date.id_for_label }}" class="form-label">
+                                        <i class="fas fa-calendar"></i> Appointment Date *
+                                    </label>
+                                    {{ form.appointment_date }}
+                                    {% if form.appointment_date.errors %}
+                                        <div class="text-danger small">{{ form.appointment_date.errors }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label for="{{ form.appointment_time.id_for_label }}" class="form-label">
+                                        <i class="fas fa-clock"></i> Appointment Time *
+                                    </label>
+                                    {{ form.appointment_time }}
+                                    {% if form.appointment_time.errors %}
+                                        <div class="text-danger small">{{ form.appointment_time.errors }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label for="{{ form.appointment_type.id_for_label }}" class="form-label">
+                                        <i class="fas fa-stethoscope"></i> Appointment Type
+                                    </label>
+                                    {{ form.appointment_type }}
+                                    {% if form.appointment_type.errors %}
+                                        <div class="text-danger small">{{ form.appointment_type.errors }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group mb-3">
+                            <label for="{{ form.reason.id_for_label }}" class="form-label">
+                                <i class="fas fa-comment-medical"></i> Reason for Visit *
+                            </label>
+                            {{ form.reason }}
+                            {% if form.reason.errors %}
+                                <div class="text-danger small">{{ form.reason.errors }}</div>
+                            {% endif %}
+                            <div class="form-text">Please describe your symptoms or reason for the appointment.</div>
+                        </div>
+                        
+                        <div class="form-group mb-4">
+                            <label for="{{ form.notes.id_for_label }}" class="form-label">
+                                <i class="fas fa-sticky-note"></i> Additional Notes
+                            </label>
+                            {{ form.notes }}
+                            {% if form.notes.errors %}
+                                <div class="text-danger small">{{ form.notes.errors }}</div>
+                            {% endif %}
+                            <div class="form-text">Any additional information you'd like to share with the doctor.</div>
+                        </div>
+                        
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle"></i>
+                            <strong>Important:</strong> Please arrive 15 minutes before your scheduled appointment time. 
+                            Bring a valid ID and any relevant medical documents.
+                        </div>
+                        
+                        <div class="d-flex justify-content-between">
+                            <a href="{% url 'appointments' %}" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left"></i> Back to Appointments
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-calendar-check"></i> Book Appointment
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            <!-- Available Time Slots Info -->
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h6><i class="fas fa-clock"></i> General Appointment Guidelines</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6>Available Hours</h6>
+                            <ul class="list-unstyled">
+                                <li><i class="fas fa-check text-success"></i> Monday - Friday: 9:00 AM - 5:00 PM</li>
+                                <li><i class="fas fa-check text-success"></i> Saturday: 9:00 AM - 1:00 PM</li>
+                                <li><i class="fas fa-times text-danger"></i> Sunday: Closed (Emergency only)</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>Appointment Types</h6>
+                            <ul class="list-unstyled">
+                                <li><strong>Consultation:</strong> General health checkup</li>
+                                <li><strong>Follow-up:</strong> Post-treatment review</li>
+                                <li><strong>Emergency:</strong> Urgent medical attention</li>
+                                <li><strong>Routine:</strong> Regular health maintenance</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Set minimum date to today
+document.addEventListener('DOMContentLoaded', function() {
+    const dateInput = document.getElementById('{{ form.appointment_date.id_for_label }}');
+    if (dateInput) {
+        const today = new Date().toISOString().split('T')[0];
+        dateInput.setAttribute('min', today);
+    }
+});
+</script>
+{% endblock %}
